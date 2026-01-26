@@ -1,0 +1,8 @@
+services:
+  database:
+    container_name: nest-template
+    image: 'postgres:18.1-alpine3.23'
+    env_file:
+      - .env.development
+    ports:
+      - '5432:5432'
