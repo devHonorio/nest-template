@@ -2,8 +2,10 @@ import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import z from 'zod';
 
 async function bootstrap() {
+  z.config(z.locales.pt());
   const config = new DocumentBuilder()
     .setTitle('Template Nest')
     .setDescription(
@@ -14,20 +16,9 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
 
-  const openApiDoc = SwaggerModule.createDocument(
-    app,
-    new DocumentBuilder()
-      .setTitle('Nest Template')
-      .setDescription('Documentação do template nestjs')
-      .setVersion('1.0')
-      .build(),
-  );
+  const document = SwaggerModule.createDocument(app, config);
 
-  SwaggerModule.setup('api', app, cleanupOpenApiDoc(openApiDoc));
-
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-
-  SwaggerModule.setup('api', app, documentFactory);
+  SwaggerModule.setup('api', app, cleanupOpenApiDoc(document));
   await app.listen(process.env.PORT ?? 3000);
 }
 void bootstrap();
