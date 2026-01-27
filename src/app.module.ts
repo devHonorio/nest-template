@@ -1,37 +1,40 @@
-import {
-  ZodValidationPipe,
-  ZodSerializerInterceptor,
-  ZodSerializationException,
-} from 'nestjs-zod';
+import { ZodValidationPipe, ZodSerializerInterceptor } from 'nestjs-zod';
 import {
   APP_PIPE,
   APP_INTERCEPTOR,
   APP_FILTER,
   BaseExceptionFilter,
 } from '@nestjs/core';
-import { ZodError } from 'zod';
-import {
-  Module,
-  HttpException,
-  ArgumentsHost,
-  Logger,
-  Catch,
-} from '@nestjs/common';
+import { Module, HttpException, ArgumentsHost, Catch } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaService } from './prisma/prisma.service';
+import { AuthController } from './auth/auth.controller';
+import { Response } from 'express';
 
 @Catch(HttpException)
 class HttpExceptionFilter extends BaseExceptionFilter {
-  private logger = new Logger(HttpExceptionFilter.name);
-
   catch(exception: HttpException, host: ArgumentsHost) {
-    if (exception instanceof ZodSerializationException) {
-      const zodError = exception.getZodError();
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+    const status = exception.getStatus();
+    const exceptionResponse = exception.getResponse();
 
-      if (zodError instanceof ZodError) {
-        this.logger.error(`ZodSerializationException: ${zodError.message}`);
-      }
+    if (exception.constructor.name === 'ZodValidationException') {
+      const { errors } = exceptionResponse as {
+        errors: {
+          path: string[];
+          message: string;
+        }[];
+      };
+
+      const firstError = errors[0];
+
+      return response.status(status).json({
+        message: firstError.message,
+        statusCode: status,
+        error: `Erro em ${firstError.path.join('/')}`,
+      });
     }
 
     super.catch(exception, host);
@@ -40,7 +43,7 @@ class HttpExceptionFilter extends BaseExceptionFilter {
 
 @Module({
   imports: [],
-  controllers: [AppController],
+  controllers: [AppController, AuthController],
   providers: [
     AppService,
     PrismaService,
