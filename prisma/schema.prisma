@@ -7,3 +7,24 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model User {
+  id       String    @id @default(uuid())
+  name     String
+  phone    String    @unique
+  verified Boolean   @default(false)
+  authCode AuthCode?
+  isAdmin  Boolean   @default(false)
+
+  @@map("users")
+}
+
+model AuthCode {
+  id       String @id @default(uuid())
+  userId   String @unique
+  users    User   @relation(fields: [userId], references: [id])
+  attempts Int    @default(0)
+  hash     String
+
+  @@map("auth_code")
+}
