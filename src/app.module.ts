@@ -6,11 +6,12 @@ import {
   BaseExceptionFilter,
 } from '@nestjs/core';
 import { Module, HttpException, ArgumentsHost, Catch } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { PrismaService } from './prisma/prisma.service';
-import { AuthController } from './auth/auth.controller';
+import { PrismaService } from './infra/database/prisma/prisma.service';
 import { Response } from 'express';
+import { PrismaAuthModule } from './infra/database/prisma/auth/auth.module';
+import { ConfigModule } from '@nestjs/config';
+import configuration from './configuration';
+import { JwtNestModule } from './infra/auth/jwt/jwt.module';
 
 @Catch(HttpException)
 class HttpExceptionFilter extends BaseExceptionFilter {
@@ -28,24 +29,36 @@ class HttpExceptionFilter extends BaseExceptionFilter {
         }[];
       };
 
-      const firstError = errors[0];
+      if (!errors || errors.length === 0) {
+        super.catch(exception, host);
+        return;
+      }
 
+      const firstError = errors[0];
       return response.status(status).json({
         message: firstError.message,
         statusCode: status,
-        error: `Erro em ${firstError.path.join('/')}`,
+        error: `Erro em "${firstError.path.join('/')}"`,
       });
     }
+
+    console.error(exception);
 
     super.catch(exception, host);
   }
 }
 
 @Module({
-  imports: [],
-  controllers: [AppController, AuthController],
+  imports: [
+    ConfigModule.forRoot({
+      load: [configuration],
+      isGlobal: true,
+    }),
+    PrismaAuthModule,
+    JwtNestModule,
+  ],
+  controllers: [],
   providers: [
-    AppService,
     PrismaService,
     {
       provide: APP_PIPE,
