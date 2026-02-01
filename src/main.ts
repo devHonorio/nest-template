@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import z from 'zod';
+import { apiReference } from '@scalar/nestjs-api-reference';
 
 async function bootstrap() {
   z.config(z.locales.pt());
@@ -19,6 +20,23 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
 
   SwaggerModule.setup('api', app, cleanupOpenApiDoc(document));
+
+  app.use(
+    '/reference',
+    apiReference({
+      spec: {
+        content: document,
+      },
+      theme: 'dark',
+      layout: 'modern',
+    }),
+  );
   await app.listen(process.env.PORT ?? 3000);
+  console.log(
+    `API is running at http://localhost:${process.env.PORT ?? 3000}/api`,
+  );
+  console.log(
+    `Reference is running at http://localhost:${process.env.PORT ?? 3000}/reference`,
+  );
 }
 void bootstrap();
