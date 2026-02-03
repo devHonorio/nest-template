@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { EncrypterRepository } from 'src/domain/encrypter/encrypter.repository';
 
 @Injectable()
-export class JwtEncrypterRepository extends EncrypterRepository {
+export class JwtEncrypterService extends EncrypterRepository {
   constructor(private jwtService: JwtService) {
     super();
   }

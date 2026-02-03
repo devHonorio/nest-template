@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { User } from '../users/entities/User';
 import { AuthRepository } from './auth.repository';
-import { EncrypterRepository } from './encrypter.repository';
 import { UserService } from '../users/user.service';
+import { EncrypterRepository } from '../encrypter/encrypter.repository';
 
 @Injectable()
 export class AuthService {
