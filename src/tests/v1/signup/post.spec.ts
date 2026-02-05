@@ -5,6 +5,7 @@ import { App } from 'supertest/types';
 import { AppModule } from 'src/app.module';
 import { InMemoryUserRepository } from 'src/tests/mocks/in-memory-user-repository';
 import { UserRepository } from 'src/domain/users/user.repository';
+import { User } from 'src/domain/users/entities/User';
 
 describe('POST /auth/signup', () => {
   let app: INestApplication<App>;
@@ -22,7 +23,14 @@ describe('POST /auth/signup', () => {
 
     userRepository = moduleFixture.get<InMemoryUserRepository>(UserRepository);
 
-    userRepository.users = [];
+    userRepository.users = [
+      new User({
+        id: 'any_id',
+        name: 'any_name',
+        phone: '+5511999999999',
+        verified: true,
+      }),
+    ];
     await app.init();
   });
 
@@ -118,7 +126,7 @@ describe('POST /auth/signup', () => {
     test('creating a user with valid data', () => {
       return request(app.getHttpServer())
         .post('/auth/signup')
-        .send({ phone: '+5511999999999', name: 'Jose da Silva' })
+        .send({ phone: '+5511999999998', name: 'Jose da Silva' })
         .expect(201)
         .expect((res) => {
           const { otp_token } = res.body as { otp_token: string };
@@ -128,6 +136,18 @@ describe('POST /auth/signup', () => {
           if (!jwtRegex.test(otp_token)) {
             throw new Error('O otpToken não é um JWT válido');
           }
+        });
+    });
+
+    test('creating a user with a phone that already exists', () => {
+      return request(app.getHttpServer())
+        .post('/auth/signup')
+        .send({ phone: '+5511999999999', name: 'Jose da Silva' })
+        .expect(400)
+        .expect({
+          message: 'Dados inválidos para criação de usuário.',
+          error: 'Bad Request',
+          statusCode: 400,
         });
     });
   });

@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  ServiceUnavailableException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { User } from './entities/User';
 
@@ -11,17 +7,12 @@ export class UserService {
   constructor(private userRepository: UserRepository) {}
 
   async createUser(user: User) {
-    try {
-      return await this.userRepository.create(user);
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
+    const createdUser = await this.userRepository.create(user);
 
-      throw new ServiceUnavailableException(
-        'Erro ao fazer cadastro de usuário.',
-      );
+    if (!createdUser) {
+      throw new BadRequestException('Dados inválidos para criação de usuário.');
     }
+    return createdUser;
   }
 
   async deleteUserById(id: string) {

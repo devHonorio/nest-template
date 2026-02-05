@@ -3,8 +3,14 @@ import { UserRepository } from 'src/domain/users/user.repository';
 
 export class InMemoryUserRepository extends UserRepository {
   public users: User[] = [];
+  constructor() {
+    super();
+  }
 
   create(user: User): Promise<User | null> {
+    if (this.users.find((u) => u.phone === user.phone)) {
+      return Promise.resolve(null);
+    }
     this.users.push(user);
     return Promise.resolve(user);
   }
