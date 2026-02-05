@@ -31,8 +31,6 @@ export class HttpExceptionFilter extends BaseExceptionFilter {
       });
     }
 
-    console.error(exception);
-
     super.catch(exception, host);
   }
 }
