@@ -9,10 +9,10 @@ const signupSchema = z.object({
   phone: z
     .string()
     .min(3)
-    .transform((phone) => `+${phone}`.replace(/\D/g, ''))
+    .transform((phone) => `+${phone.replace(/\D/g, '')}`)
     .refine(
       (phone) => {
-        const phoneNumber = parsePhoneNumber(`+${phone}`);
+        const phoneNumber = parsePhoneNumber(`${phone}`);
         return phoneNumber.valid;
       },
       {
