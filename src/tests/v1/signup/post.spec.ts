@@ -103,7 +103,7 @@ describe('POST /auth/signup', () => {
         });
     });
 
-    test('', () => {
+    test('creating a user with invalid data', () => {
       return request(app.getHttpServer())
         .post('/auth/signup')
         .send()
@@ -123,7 +123,6 @@ describe('POST /auth/signup', () => {
         .expect((res) => {
           const { otp_token } = res.body as { otp_token: string };
 
-          // Regex que valida a estrutura xxxxx.yyyyy.zzzzz
           const jwtRegex = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/;
 
           if (!jwtRegex.test(otp_token)) {
